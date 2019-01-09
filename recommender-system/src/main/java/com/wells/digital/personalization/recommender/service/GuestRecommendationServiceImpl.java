@@ -56,7 +56,31 @@ public class GuestRecommendationServiceImpl {
 		Map<String, Double> neighbors = getCloseUsers(userAttributes, cookieAttributes);
 		//List<String> productIds = getProductsHeld(neighbors);
 		List<String> productIds = getVisitedProductsForNeighbors(neighbors);
+		if(productIds.isEmpty()) {
+			productIds = getTopProducts();
+		}
 		return productIds;
+	}
+
+	private List<String> getTopProducts() {
+		Document filter = new Document();
+		Document nestedFilter = new Document();
+		nestedFilter.append("$ne", null);
+		filter.append("likelihood", nestedFilter);
+		MongoCursor<Document> cursor = mongoConnector.getConnection().getCollection(Constants.COLLECTION_USER).find(filter).iterator();
+		Map<String,Double> products = new HashMap<>();
+		while(cursor.hasNext()) {
+			Document document = cursor.next();
+			Map<String, Double> newProducts = (Map<String, Double>) document.get("likelihood");
+			for(Entry<String, Double> entry:newProducts.entrySet()) {
+				if(!products.containsKey(entry.getKey())){
+					products.put(entry.getKey(), 0.0);
+				}
+				products.put(entry.getKey(), products.get(entry.getKey())+entry.getValue());
+			}
+		}
+		products = sortMapByValueReverse(products);
+		return new ArrayList(products.keySet());
 	}
 
 	// TODO check if it is user id or cookie id
@@ -170,7 +194,10 @@ public class GuestRecommendationServiceImpl {
 			Map<String, String> productAttributes = (Map<String, String>) doc.get("productAttributes");
 			if (productAttributes == null || productAttributes.size() <= 0)
 				continue;
-			map.put(doc.getString("cookieId"), productAttributes);
+			List<String> cookieIds = (List<String>) doc.get("cookieId");
+			for(String cookie:cookieIds) {
+				map.put(cookie, productAttributes);
+			}
 		}
 		return map;
 	}
@@ -181,7 +208,7 @@ public class GuestRecommendationServiceImpl {
 				.iterator();
 		while (cursor.hasNext()) {
 			Document doc = cursor.next();
-			cookies.add(doc.getString("cookieId"));
+			cookies.addAll((List<String>)doc.get("cookieId"));
 		}
 		return cookies;
 	}
