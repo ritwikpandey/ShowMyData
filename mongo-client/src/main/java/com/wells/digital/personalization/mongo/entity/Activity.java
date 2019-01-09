@@ -7,9 +7,18 @@ import org.bson.Document;
 
 public class Activity {
 	private String userId;
+	private String cookieId;
 	private List<RecentActivity> recentActivities;
 	private List<ProductCount> productCounts;
 
+	public String getCookieId() {
+		return cookieId;
+	}
+
+	public void setCookieId(String cookieId) {
+		this.cookieId = cookieId;
+	}
+	
 	public String getUserId() {
 		return userId;
 	}
@@ -36,7 +45,7 @@ public class Activity {
 
 	public Document getMongoDocument() {
 		Document document = new Document();
-		document.append("userId", userId);
+		document.append("cookieId", cookieId);
 		if (recentActivities == null) {
 			recentActivities = new ArrayList<RecentActivity>();
 		}
@@ -70,6 +79,7 @@ public class Activity {
 		this.setRecentActivities(
 				getrecentActivitiesFromDocument(document.get("recentActivities", List.class)));
 		this.setUserId(document.getString("userId"));
+		this.setCookieId(document.getString("cookieId"));
 	}
 
 	public List<ProductCount> getproductCountsFromDocument(List<Document> productCountDocuments) {
