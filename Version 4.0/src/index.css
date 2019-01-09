@@ -1,0 +1,105 @@
+body {
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+    monospace;
+}
+
+.app {
+  background:#f3f3f3;
+  height: 100vh;
+  width: 100vw;
+  overflow-x: hidden;
+}
+
+.nowwrap{
+  white-space: normal !important;
+}
+
+.app .header{
+height: 8vh;
+width:100%;
+background-color: #b61235;
+}
+
+.app .header .left{
+ height: 8vh;
+  float:left;
+ width:40%;
+ margin:0 0 0 4vw;
+ text-align: left;
+}
+.app .header .right{
+  height: 8vh;
+   float:right;
+   margin:0 2vw 0 0;
+  text-align: center;
+  cursor: pointer;
+ }
+
+ .onhover:hover{
+   text-decoration: underline
+ }
+
+.app .subheader{
+  height:8vh;
+  margin: 6vh 6vw 0 6vw;
+}
+ 
+.app .subheader .subHeaderText{
+  float: left;
+  margin: 0;
+  margin-top: 3vh;
+  padding:0 2vw 0 2vw;
+  height: 5vh;
+  font-family: 'Open Sans';
+  line-height: 5vh;
+  color: #545558;
+  cursor: pointer;
+}
+
+.app .subheader .selected{
+  font-weight: 600;
+  background: #dfdfdf;
+  color: #545558;
+  border-top-left-radius: 3px;
+  border-top-right-radius: 3px;
+}
+
+.mortgageLoanBanner {
+  background-image:url('./assets/banner.png');
+background-repeat:no-repeat;
+background-size:contain;
+background-position:center;
+}
+
+.bankCardBanner {
+  background-image:url('./assets/cardBanner.png');
+background-repeat:no-repeat;
+background-size:contain;
+background-position:center;
+}
+
+/*Start: Scroll bar CSS */
+.modern-scroll::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 0px transparent;
+  -webkit-box-shadow: inset 0 0 6px transparent;
+  background-color: transparent;
+}
+.modern-scroll::-webkit-scrollbar {
+  width: 3px;
+  background-color: transparent;
+}
+.modern-scroll::-webkit-scrollbar-thumb {
+  z-index: -1;
+  background-color: #b61235;
+}
+/*End: Scroll bar CSS */
