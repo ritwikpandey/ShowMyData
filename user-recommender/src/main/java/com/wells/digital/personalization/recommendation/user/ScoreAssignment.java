@@ -25,9 +25,14 @@ public class ScoreAssignment {
 		// Fetch all users
 		MongoCursor<Document> cursor = 
 				mongoConnector.getConnection().getCollection(Constants.COLLECTION_USER).find().iterator();
+		Map<String, Double> productScore = new HashMap<>();
 		while(cursor.hasNext()) {
 			Document doc = cursor.next();
-			Map<String, Double> productScore = assignScore(doc.getString("userId"));
+			List<String> cookieIds = (List<String>) doc.get("cookieId");
+			for(String cookieId:cookieIds) {
+				Map<String, Double> productScoreForCookie = assignScore(cookieId);
+				updateProductScoreForUser(productScoreForCookie, productScore);
+			}
 			Document filter = new Document();
 			filter.append("userId", doc.getString("userId"));
 			Document update = new Document();
@@ -35,9 +40,22 @@ public class ScoreAssignment {
 			score.append("score", productScore);
 			update.append("$set", score);
 			mongoConnector.getConnection().getCollection(Constants.COLLECTION_USER).updateOne(filter, update);
+			productScore.clear();
 		}
 	}
 	
+	private void updateProductScoreForUser(Map<String, Double> productScoreForCookie,
+			Map<String, Double> productScore) {
+		for(Entry<String, Double> entry: productScoreForCookie.entrySet()) {
+			if(productScore.containsKey(entry.getKey())) {
+				productScore.put(entry.getKey(), productScore.get(entry.getKey())+entry.getValue());
+			}
+			else {
+				productScore.put(entry.getKey(), entry.getValue());
+			}
+		}
+	}
+
 	public Map<String, Double> assignScore(String userId) {
 		Map<String, Double> weights = getWeightsForActivities();
 		// Sum all activity types of productActivityCount.
@@ -47,11 +65,11 @@ public class ScoreAssignment {
 		return productScore;
 	}
 
-	private Map<String, Map<String, Double>> getProductActivityCount(String userId, Map<String, Double> weights,
+	private Map<String, Map<String, Double>> getProductActivityCount(String cookieId, Map<String, Double> weights,
 			Map<String, Double> productScore) {
 		Map<String, Map<String, Double>> productActivityCount = new HashMap<>();
 		MongoCursor<Document> cursor = mongoConnector.getConnection().getCollection(Constants.COLLECTION_ACTIVITY)
-				.find(new Document("userId", userId)).iterator();
+				.find(new Document("cookieId", cookieId)).iterator();
 		while (cursor.hasNext()) {
 			Document document = cursor.next();
 			List<Document> activities = (List<Document>) document.get("recentActivities");
