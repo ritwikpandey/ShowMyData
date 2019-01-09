@@ -1,4 +1,4 @@
-Architecture
+/*Architecture
 	Services - Content Provider, Personalized page
 	Microservices
 Data model
@@ -33,3 +33,4 @@ MCP updation in MongoDB for user profile
 
 Request->Page id ,slot id, wfa cookie id, IP, MCID, device info
 
+*/

@@ -16,6 +16,7 @@ import com.wells.digital.personalization.mongo.entity.Activity;
 import com.wells.digital.personalization.mongo.entity.ActivityRequest;
 import com.wells.digital.personalization.mongo.entity.ProductCount;
 import com.wells.digital.personalization.mongo.entity.RecentActivity;
+import com.wells.digital.personalization.mongo.entity.UserProfile;
 import com.wells.digital.personalization.mongo.entity.Utility;
 
 @Component
@@ -29,8 +30,9 @@ public class ActivityServiceImpl implements ActivityService {
 
 		// Means user is coming for the first time, hence activity will not be stored.
 		//TODO
-		if(!setUserIdInActivity(activityRequest))
-			return;
+		if(!setUserIdInActivity(activityRequest)) {
+			createNewUser(activityRequest);
+		}
 		
 		MongoCollection<Document> collection = mongoConnector.getConnection()
 				.getCollection(Constants.COLLECTION_ACTIVITY);
@@ -41,16 +43,43 @@ public class ActivityServiceImpl implements ActivityService {
 		RecentActivity recentActivity = populateRecentActivity(activityRequest);
 
 		// If no entry is present for specific user's activity, create a new document.
-		if (!collection.find(new Document("userId", activityRequest.getUserId())).iterator().hasNext()) {
+		if (!collection.find(new Document("cookieId", activityRequest.getCookieId())).iterator().hasNext()) {
 			createActivity(activityRequest, activity, recentActivity, collection);
 		} else {
 			updateActivity(activityRequest, activity, recentActivity, collection);
 		}
+	}
 
+	// Create a new user in ODS table and store the details
+	private void createNewUser(ActivityRequest activityRequest) {
+		UserProfile userProfile = new UserProfile();
+		List<String> cookies = new ArrayList<>();
+		if(activityRequest.getCookieId()!=null)
+			cookies.add(activityRequest.getCookieId());
+		userProfile.setCookieId(cookies);
+		List<String> ipAddresses = new ArrayList<>();
+		if(activityRequest.getIpAddress()!=null)
+			ipAddresses.add(activityRequest.getIpAddress());
+		userProfile.setIpAddress(ipAddresses);
+		List<String> deviceTypes = new ArrayList<>();
+		if(activityRequest.getDeviceType()!=null)
+			deviceTypes.add(activityRequest.getDeviceType());
+		userProfile.setDeviceType(deviceTypes);
+		List<String> macIds = new ArrayList<>();
+		if(activityRequest.getMacId()!=null)
+			macIds.add(activityRequest.getMacId());
+		userProfile.setDeviceId(macIds);
+		String userId = String.valueOf(System.currentTimeMillis());
+		userProfile.setUserId(userId);
+		
+		MongoCollection<Document> collection = mongoConnector.getConnection()
+				.getCollection(Constants.COLLECTION_USER_PROFILE_ODS);
+		
+		collection.insertOne(userProfile.getMongoDocument());
 	}
 
 	private boolean setUserIdInActivity(ActivityRequest activityRequest) {
-		String userId = getUserIdForCookie(activityRequest.getUserId());
+		String userId = getUserIdForCookie(activityRequest.getCookieId());
 		boolean setUserId = false;
 		if(userId!=null) {
 			activityRequest.setUserId(userId);
@@ -68,7 +97,7 @@ public class ActivityServiceImpl implements ActivityService {
 		List<RecentActivity> recentActivities = new ArrayList<RecentActivity>();
 		recentActivities.add(recentActivity);
 		activity.setRecentActivities(recentActivities);
-		activity.setUserId(activityRequest.getUserId());
+		activity.setCookieId(activityRequest.getCookieId());
 		// Insert the user activity in Mongo collection
 		collection.insertOne(activity.getMongoDocument());
 	}
@@ -76,7 +105,7 @@ public class ActivityServiceImpl implements ActivityService {
 	private void updateActivity(ActivityRequest activityRequest, Activity activity, RecentActivity recentActivity,
 			MongoCollection<Document> collection) {
 		// Create a new entry in recentActivity array.
-		MongoCursor<Document> cursor = collection.find(new Document("userId", activityRequest.getUserId())).iterator();
+		MongoCursor<Document> cursor = collection.find(new Document("cookieId", activityRequest.getCookieId())).iterator();
 		Document document = cursor.next();
 		activity.getObjectFromDocument(document);
 		if (activity.getRecentActivities() == null) {
@@ -147,6 +176,13 @@ public class ActivityServiceImpl implements ActivityService {
 		String userId = null;
 		if (cursor.hasNext()) {
 			userId = cursor.next().getString("userId");
+		}
+		else {
+			cursor = mongoConnector.getConnection().getCollection(Constants.COLLECTION_USER_PROFILE_ODS)
+					.find(new Document("cookieId", cookieId)).iterator();
+			if (cursor.hasNext()) {
+				userId = cursor.next().getString("userId");
+			}
 		}
 		return userId;
 	}

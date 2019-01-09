@@ -30,6 +30,8 @@ public class ActivityController {
 		String response;
 		try {
 			ActivityRequest activityRequest = getActivityRequestObject(body);
+			activityRequest.setCookieId(activityRequest.getUserId());
+			activityRequest.setUserId(null);
 			activityService.addUserActivity(activityRequest);
 		} catch (Exception e) {
 			e.printStackTrace();
