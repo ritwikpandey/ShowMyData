@@ -8,4 +8,5 @@ public interface CookieService {
 	
 	public String getAttributesForSegment(String segmentId);
 	
+	public void consolidateCookies();
 }

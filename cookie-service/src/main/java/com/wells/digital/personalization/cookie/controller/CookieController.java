@@ -33,4 +33,19 @@ public class CookieController {
 		}
 		return segmentId;
 	}
+	
+	/*
+	 * Consolidate existing cookies and moves those from ODS collection to userProfile
+	 */
+	@ResponseBody
+	@RequestMapping(value = "/consolidate", method = RequestMethod.GET)
+	public String consolidateCookies() {
+		try {
+			cookieService.consolidateCookies();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return "{\"status\":\"failed\"}";
+		}
+		return "{\"status\":\"passed\"}";
+	}
 }
