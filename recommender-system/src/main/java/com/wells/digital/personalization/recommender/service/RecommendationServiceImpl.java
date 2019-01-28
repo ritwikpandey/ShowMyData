@@ -1,6 +1,8 @@
 package com.wells.digital.personalization.recommender.service;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -25,10 +27,10 @@ public class RecommendationServiceImpl implements RecommendationService {
 
 	@Autowired
 	private MongoConnector mongoConnector;
-	
+
 	@Value("${cutoff.likelihood}")
 	private String cutoffUserLikelihood;
-	
+
 	@Autowired
 	private GuestRecommendationServiceImpl guestRecommendationService;
 
@@ -45,7 +47,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 			Set<String> uniqueProductIds = new HashSet<>();
 			if (recent != null) {
 				if (recent.size() > 5) {
-//					recent = recent.subList(recent.size() - 5, recent.size() - 1);
+					// recent = recent.subList(recent.size() - 5, recent.size() - 1);
 					for (int i = recent.size() - 1; i >= 0; i--) {
 						String productId = recent.get(i).getString("productId");
 						if (uniqueProductIds.add(productId)) {
@@ -76,29 +78,29 @@ public class RecommendationServiceImpl implements RecommendationService {
 	@Override
 	public String getUserRecommendations(String userId) {
 		boolean newCookie = isNewCookie(userId);
-		if(newCookie)
+		if (newCookie)
 			return getProducts(guestRecommendationService.getSuggestedProductIds(userId));
 		Map<String, Double> likes = new HashMap<>();
 		List<Document> products = new ArrayList<>();
-		MongoCursor<Document> cursor = 
-				mongoConnector.getConnection().getCollection(Constants.COLLECTION_USER).find(new Document("cookieId", userId)).iterator();
-		while(cursor.hasNext()) {
+		MongoCursor<Document> cursor = mongoConnector.getConnection().getCollection(Constants.COLLECTION_USER)
+				.find(new Document("cookieId", userId)).iterator();
+		while (cursor.hasNext()) {
 			Document doc = cursor.next();
 			likes = (Map<String, Double>) doc.get("likelihood");
 		}
-		if(likes!=null)
-		for(Entry<String, Double> e: likes.entrySet()) {
-			if(e.getValue()>=Double.parseDouble(cutoffUserLikelihood)) {
-				products.add(fetchProductById(e.getKey()));
+		if (likes != null)
+			for (Entry<String, Double> e : likes.entrySet()) {
+				if (e.getValue() >= Double.parseDouble(cutoffUserLikelihood)) {
+					products.add(fetchProductById(e.getKey()));
+				}
 			}
-		}
 		String productsToDisplay = new Gson().toJson(products);
 		return productsToDisplay;
 	}
-	
-	private String getProducts(List<String> productIds){
+
+	private String getProducts(List<String> productIds) {
 		List<Document> products = new ArrayList<>();
-		for(String productId:productIds) {
+		for (String productId : productIds) {
 			products.add(fetchProductById(productId));
 		}
 		return new Gson().toJson(products);
@@ -126,7 +128,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 				products.add(product);
 			}
 		}
-		if(notRecent) {
+		if (notRecent) {
 			Collections.shuffle(products);
 		}
 		String productsToDisplay = new Gson().toJson(products);
@@ -166,5 +168,135 @@ public class RecommendationServiceImpl implements RecommendationService {
 		}
 		return null;
 	}
-	
+
+	@Override
+	public String getContentRecommendations(String cookieId) {
+		int lastItemLevel = -1;
+		String recommendedContentId = "";
+		List<Map<String, String>> browsedItems = getBrowsedItems(cookieId);
+		Map<String, String> lastItem = new HashMap<>();
+		// To contain list of content ids user has already seen and clicked
+		List<String> displayedContentIds = new ArrayList<>();
+		if (browsedItems != null && browsedItems.size() > 0) {
+			lastItem = browsedItems.get(browsedItems.size() - 1);
+			for (Map<String, String> content : browsedItems) {
+				displayedContentIds.add(content.get("contentId"));
+			}
+		}
+		if (lastItem.get("level") != null) {
+			lastItemLevel = Integer.parseInt(lastItem.get("level"));
+			if (lastItemLevel < 2) {
+				recommendedContentId = lastItem.get("contentId");
+			}
+			else {
+				lastItemLevel = -1;
+			}
+		}
+		Map<String, String> segments = new HashMap<>();
+		if (recommendedContentId.equalsIgnoreCase("")) {
+			// Equivalent to making call to DMP service.
+			segments = getCookieSegments(cookieId);
+			if(segments!=null && segments.get("segment")!=null) {
+				List<String> seg = Arrays.asList(segments.get("segment").split("_"));
+				recommendedContentId = getMatchingContentId(seg, displayedContentIds);
+			}
+		}
+		if(recommendedContentId==null || recommendedContentId.equalsIgnoreCase(""))
+			recommendedContentId = "mortgage_temp1_laptop";
+		Document doc = getContent(recommendedContentId);
+		if(lastItemLevel!=-1) {
+			doc.put("level", lastItemLevel);
+		}
+		fillPlaceHolders(doc, segments);
+		return new Gson().toJson(doc);
+	}
+
+	private void fillPlaceHolders(Document doc, Map<String, String> segments) {
+		String price = "";
+		if (doc != null && doc.get("data") != null) {
+			if(segments.get("price")!=null) {
+				price = segments.get("price").split("-")[0];
+			}
+			if(price.equalsIgnoreCase(""))
+				price = "240000";
+			Document data = (Document) doc.get("data");
+			if (data.get("loanAmount") != null) {
+				data.put("loanAmount", price);
+			}
+			if (data.get("emi") != null) {
+				Double amt = Double.parseDouble(price);
+				amt = amt*0.8;
+				Double emi = (amt*(.045/12)*(Math.pow((1+(.045)/12), 360)))/Math.pow((1+(.045)/12), 360-1);
+				DecimalFormat df = new DecimalFormat("##.## ");
+				data.put("emi", df.format(emi));
+			}
+		}
+	}
+
+	private Document getContent(String recommendedContentId) {
+		Document doc = new Document();
+		Document filter = new Document();
+		filter.append("contentId", recommendedContentId);
+		MongoCursor<Document> cursor = mongoConnector.getConnection().getCollection(Constants.COLLECTION_CONTENT).find(filter)
+				.iterator();
+		if (cursor.hasNext()) {
+			doc = cursor.next();
+		}
+		return doc;
+	}
+
+	private String getMatchingContentId(List<String> seg, List<String> displayedContentIds) {
+		MongoCursor<Document> cursor = mongoConnector.getConnection().getCollection(Constants.COLLECTION_CONTENT).find()
+				.iterator();
+		int count = 0;
+		int maxCount = 0;
+		int bestContentTotalCount = 0;
+		String bestContentId = "";
+		while (cursor.hasNext()) {
+			count = 0;
+			Document document = cursor.next();
+			String contentId = document.getString("contentId");
+			List<String> contentTags = Arrays.asList(contentId.split("_"));
+			for (String s : seg) {
+				if (contentTags.contains(s))
+					count++;
+			}
+			if ((count >= maxCount) && !(displayedContentIds.contains(contentId))) {
+				if(count==maxCount && contentTags.size()>bestContentTotalCount) {
+					continue;
+				}
+				maxCount = count;
+				bestContentId = contentId;
+				bestContentTotalCount = contentTags.size();
+			}
+		}
+		return bestContentId;
+	}
+
+	private List<Map<String, String>> getBrowsedItems(String cookieId) {
+		List<Map<String, String>> history = new ArrayList<>();
+		Document filter = new Document();
+		filter.append("cookieId", cookieId);
+		MongoCursor<Document> cursor = mongoConnector.getConnection()
+				.getCollection(Constants.COLLECTION_RECOMMENDATION_HISTORY).find(filter).iterator();
+		if (cursor.hasNext()) {
+			Document doc = cursor.next();
+			history = (List<Map<String, String>>) doc.get("history");
+		}
+		return history;
+	}
+
+	private Map<String, String> getCookieSegments(String cookieId) {
+		Map<String, String> attributes = new HashMap<>();
+		Document filter = new Document();
+		filter.append("cookieId", cookieId);
+		MongoCursor<Document> cursor = mongoConnector.getConnection().getCollection(Constants.COLLECTION_SEGMENT)
+				.find(filter).iterator();
+		if (cursor.hasNext()) {
+			Document document = cursor.next();
+			attributes = (Map<String, String>) document.get("attributes");
+		}
+		return attributes;
+	}
+
 }

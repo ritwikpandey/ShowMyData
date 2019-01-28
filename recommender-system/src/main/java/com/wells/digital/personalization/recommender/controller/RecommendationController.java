@@ -70,4 +70,20 @@ public class RecommendationController {
 //		}
 //		return userRecommendations;
 //	}
+	
+	
+	
+	// TODO Remove this method, its temporary for demo
+	@ResponseBody
+	@RequestMapping(value = "/contentRecommendations", method = RequestMethod.GET)
+	public String getProductRecommendationsTemp(@RequestParam("cookieId") String cookieId) {
+		String recentProducts = "[]";
+		try {
+			recentProducts = recommendationService.getContentRecommendations(cookieId);
+			return recentProducts;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return recentProducts;
+	}
 }

@@ -7,4 +7,6 @@ public interface RecommendationService {
 	public String getProductRecommendations(String userId);
 
 	public String getUserRecommendations(String userId);
+
+	public String getContentRecommendations(String cookieId);
 }

@@ -10,6 +10,8 @@ import org.springframework.stereotype.Component;
 
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Updates;
 import com.wells.digital.personalization.mongo.commons.Constants;
 import com.wells.digital.personalization.mongo.connector.MongoConnector;
 import com.wells.digital.personalization.mongo.entity.Activity;
@@ -207,5 +209,56 @@ public class ActivityServiceImpl implements ActivityService {
 		}
 		return userId;
 	}
+	
+	//TODO DELETEME
+	@Override
+	public void addUserActivityInRecommendationHistory(String cookieId, String contentId, String stage) {
+		//Prepare history object to be pushed for user.
+		Document activity = new Document();
+		activity.append("time", new Date());
+		activity.append("contentId", contentId);
+		activity.append("level", stage);
+		// Check if cookie id exists
+		Document filter = new Document();
+		filter.append("cookieId", cookieId);
+		MongoCursor<Document> cursor = mongoConnector.getConnection().getCollection(Constants.COLLECTION_RECOMMENDATION_HISTORY).find(filter).iterator();
+		if(cursor.hasNext()) {
+			Document currentDoc = cursor.next();
+			//Update the level, if content id is already present.
+			List<Document> history = (List<Document>) currentDoc.get("history");
+			for(Document doc:history) {
+				if(doc.getString("contentId").equalsIgnoreCase(contentId)) {
+					doc.put("level", stage);
+					updateLevel(currentDoc);
+					return;
+				}
+			}
+			// Update the existing document by pushing a new activity entry.
+			addNewEntryforExistingCookie(currentDoc, activity);
+		}
+		else {
+			// Create a new record for the cookie id.
+			createDocumentInRecommendationHistory(activity, cookieId, contentId);
+		}
+	}
+	
+	private void updateLevel(Document currentDoc) {
+		Document filter = new Document();
+		filter.append("_id", currentDoc.get("_id"));
+		mongoConnector.getConnection().getCollection(Constants.COLLECTION_RECOMMENDATION_HISTORY).replaceOne(filter, currentDoc);
+	}
 
+	private void addNewEntryforExistingCookie(Document currentDoc, Document activity) {
+		mongoConnector.getConnection().getCollection(Constants.COLLECTION_RECOMMENDATION_HISTORY).
+		updateOne(Filters.eq("_id", currentDoc.get("_id")),Updates.addToSet("history", activity));
+	}
+
+	private void createDocumentInRecommendationHistory(Document activity, String cookieId, String contentId) {
+		Document document = new Document();
+		document.append("cookieId", cookieId);
+		List<Document> hist = new ArrayList<>();
+		hist.add(activity);
+		document.append("history", hist);
+		mongoConnector.getConnection().getCollection(Constants.COLLECTION_RECOMMENDATION_HISTORY).insertOne(document);		
+	}
 }

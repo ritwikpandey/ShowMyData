@@ -1,0 +1,282 @@
+.login-page{
+    height:100vh;
+    width:100vw;
+    background: url('../../assets/login_bg.png');
+     background-size: 100% 100%;
+    background-repeat: no-repeat;
+}
+.login-page .logo {
+    margin-top: 18vw;
+    float: left;
+    width: 50vw;
+    height:200px;
+    text-align: center;
+}
+
+.login-page .logo img{
+    height: 30px;
+}
+.login-page .form {
+    margin-top: 14vw;
+    float: left;
+    width: 45vw;
+    border-left: 1px solid #fff;
+    text-align: center;
+}
+
+.input{
+     width: 20vw;
+    height: 3em;
+    color: #fff;
+    background: #A70900;
+    font-size: 1em;
+    border: 1px solid rgb(186, 186, 186);
+    padding: 0px 10px;
+    outline: none;
+}
+
+.input::-webkit-input-placeholder {
+    /* Chrome/Opera/Safari */
+    
+    color: #f4f4f4;
+}
+.input::-moz-placeholder {
+    /* Firefox 19+ */
+    color: #f4f4f4;
+}
+.input:-ms-input-placeholder{
+    /* IE 10+ */
+    color: #f4f4f4;
+}
+.input:-moz-placeholder {
+    /* Firefox 18- */
+    color: #f4f4f4;
+}
+.error-message{
+    color: #fff !important;
+    border: none !important;
+    font-weight: light;
+    font-family: "Arial";
+    font-size: 0.9em;
+}
+.button{
+    border: none;
+    width: 5vw;
+    height: 3.2em;
+    font-family: "Arial";
+    font-size: 1em;
+    outline: none;
+    cursor: pointer;
+    background: #2D9EE0;
+    color: #fff;
+}
+.button-big{
+    border: none;
+    width: 25vw;
+    height: 3.2em;
+    font-family: "Arial";
+    font-size: 1em;
+    outline: none;
+    cursor: pointer;
+    background: #ECECEC;
+    color: rgba(0,0,0,0.8);
+    border-radius: 6px;
+    font-weight: 600;
+}
+.static-text{
+    color: #f4f4f4;
+    font-weight: bold;
+    font-family: "Arial";
+    font-size: 0.8em;
+    margin-left: 8em;
+    text-decoration: none;
+    display: inline-table;
+}
+
+.button-div{
+    margin-top:2em;
+}
+
+
+@media (max-width: 800px) {
+   
+    .login-page .logo {
+        width: 100vw
+    }
+    .login-page .form {
+        width: 100vw;
+        margin-top: 8vh;
+        border: none
+    }
+    .login-page .form .input {
+        width: 60vw
+    }
+    .static-text {
+        display: block;
+        margin-left: 0px;
+        margin-top: 1em;
+    }
+}
+.modal{
+    position: absolute;
+    background:rgba(0,0,0,0.5);
+    height: 100vh;
+    width: 100vw;
+    top:0;
+    text-align: center;
+}
+.modal .body{
+    height: 40vh;
+    width: 40vw;
+    left:30vw;
+    border-radius: 20px;
+    top:20vh;
+    position: absolute;
+    background: #fff;
+    text-align: center;
+}
+
+.modal .body p{
+    position: absolute;
+    text-align: center;
+    width: 30%;
+    margin-left: 35%;
+    top:7vh;
+}
+.modal .body .button{
+    position: absolute;
+    width: 20%;
+    left:40%;
+    top:20vh;
+    border-radius: 10px;
+}
+/* Loader 5 */
+.loader-5 {
+	height: 40vh;
+    width: 6%;
+    margin-left: 47%;
+    text-align: center;
+	-webkit-animation: loader-5-1 2s cubic-bezier(0.770, 0.000, 0.175, 1.000) infinite;
+	        animation: loader-5-1 2s cubic-bezier(0.770, 0.000, 0.175, 1.000) infinite;
+}
+@-webkit-keyframes loader-5-1 {
+	0%   { -webkit-transform: rotate(0deg); }
+	100% { -webkit-transform: rotate(360deg); }
+}
+@keyframes loader-5-1 {
+	0%   { transform: rotate(0deg); }
+	100% { transform: rotate(360deg); }
+}
+.loader-5::before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0; left: 0;
+	bottom: 0; right: auto;
+	margin: auto;
+	width: 8px;
+	height: 8px;
+	background: #2D9EE0;
+	border-radius: 50%;
+	-webkit-animation: loader-5-2 2s cubic-bezier(0.770, 0.000, 0.175, 1.000) infinite;
+	        animation: loader-5-2 2s cubic-bezier(0.770, 0.000, 0.175, 1.000) infinite;
+}
+@-webkit-keyframes loader-5-2 {
+	0%   { -webkit-transform: translate3d(0, 0, 0) scale(1); }
+	50%  { -webkit-transform: translate3d(24px, 0, 0) scale(.5); }
+	100% { -webkit-transform: translate3d(0, 0, 0) scale(1); }
+}
+@keyframes loader-5-2 {
+	0%   { transform: translate3d(0, 0, 0) scale(1); }
+	50%  { transform: translate3d(24px, 0, 0) scale(.5); }
+	100% { transform: translate3d(0, 0, 0) scale(1); }
+}
+.loader-5::after {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0; left: auto;
+	bottom: 0; right: 0;
+	margin: auto;
+	width: 8px;
+	height: 8px;
+	background: #2D9EE0;
+	border-radius: 50%;
+	-webkit-animation: loader-5-3 2s cubic-bezier(0.770, 0.000, 0.175, 1.000) infinite;
+	        animation: loader-5-3 2s cubic-bezier(0.770, 0.000, 0.175, 1.000) infinite;
+}
+@-webkit-keyframes loader-5-3 {
+	0%   { -webkit-transform: translate3d(0, 0, 0) scale(1); }
+	50%  { -webkit-transform: translate3d(-24px, 0, 0) scale(.5); }
+	100% { -webkit-transform: translate3d(0, 0, 0) scale(1); }
+}
+@keyframes loader-5-3 {
+	0%   { transform: translate3d(0, 0, 0) scale(1); }
+	50%  { transform: translate3d(-24px, 0, 0) scale(.5); }
+	100% { transform: translate3d(0, 0, 0) scale(1); }
+}
+.loader-5 span {
+	display: block;
+	position: absolute;
+	top: 0; left: 0;
+	bottom: 0; right: 0;
+	margin: auto;
+	height: 32px;
+	width: 32px;
+}
+.loader-5 span::before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0; left: 0;
+	bottom: auto; right: 0;
+	margin: auto;
+	width: 8px;
+	height: 8px;
+	background: #2D9EE0;
+	border-radius: 50%;
+	-webkit-animation: loader-5-4 2s cubic-bezier(0.770, 0.000, 0.175, 1.000) infinite;
+	        animation: loader-5-4 2s cubic-bezier(0.770, 0.000, 0.175, 1.000) infinite;
+}
+@-webkit-keyframes loader-5-4 {
+	0%   { -webkit-transform: translate3d(0, 0, 0) scale(1); }
+	50%  { -webkit-transform: translate3d(0, 24px, 0) scale(.5); }
+	100% { -webkit-transform: translate3d(0, 0, 0) scale(1); }
+}
+@keyframes loader-5-4 {
+	0%   { transform: translate3d(0, 0, 0) scale(1); }
+	50%  { transform: translate3d(0, 24px, 0) scale(.5); }
+	100% { transform: translate3d(0, 0, 0) scale(1); }
+}
+.loader-5 span::after {
+	content: "";
+	display: block;
+	position: absolute;
+	top: auto; left: 0;
+	bottom: 0; right: 0;
+	margin: auto;
+	width: 8px;
+	height: 8px;
+	background: #2D9EE0;
+	border-radius: 50%;
+	-webkit-animation: loader-5-5 2s cubic-bezier(0.770, 0.000, 0.175, 1.000) infinite;
+	        animation: loader-5-5 2s cubic-bezier(0.770, 0.000, 0.175, 1.000) infinite;
+}
+@-webkit-keyframes loader-5-5 {
+	0%   { -webkit-transform: translate3d(0, 0, 0) scale(1); }
+	50%  { -webkit-transform: translate3d(0, -24px, 0) scale(.5); }
+	100% { -webkit-transform: translate3d(0, 0, 0) scale(1); }
+}
+@keyframes loader-5-5 {
+	0%   { transform: translate3d(0, 0, 0) scale(1); }
+	50%  { transform: translate3d(0, -24px, 0) scale(.5); }
+	100% { transform: translate3d(0, 0, 0) scale(1); }
+}
+
+
+
+@media (max-width: 600px) {
+    .login-page .form .button {
+        width: 40vw
+    }
+}

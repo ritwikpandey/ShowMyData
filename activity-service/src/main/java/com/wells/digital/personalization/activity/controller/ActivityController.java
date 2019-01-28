@@ -70,4 +70,17 @@ public class ActivityController {
 		ActivityRequest activityRequest = new Gson().fromJson(body, ActivityRequest.class);
 		return activityRequest;
 	}
+	
+	@ResponseBody
+	@RequestMapping(value = "/activityStoreHistory", method = RequestMethod.POST)
+	public String addUserActivityInHistory(@RequestParam("cookieId") String cookieId, @RequestParam("contentId") String contentId, @RequestParam("level") String stage) {
+		String response;
+		try {
+			activityService.addUserActivityInRecommendationHistory(cookieId, contentId, stage);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return "error";
+		}
+		return "success";
+	}
 }

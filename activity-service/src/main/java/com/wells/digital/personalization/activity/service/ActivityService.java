@@ -11,5 +11,7 @@ public interface ActivityService {
 	public void resetAllActivities();
 	
 	public String getUserIdForCookieId(String cookieId);
+
+	public void addUserActivityInRecommendationHistory(String cookieId, String contentId, String stage);
 	
 }
